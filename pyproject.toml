@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bioqc-lite"
+version = "0.1.2"
+authors = [
+  { name="E.C.Lykoudi", email="chlikoudi@gmail.com" },
+]
+description = "A unified QC tool for DNA, RNA, and Protein sequences"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = [
+    "biopython",
+    "matplotlib",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.scripts]
+bioqc = "bioqc.main:main"
