@@ -1,20 +1,23 @@
-import os
+from pathlib import Path
 from Bio import SeqIO
 from Bio.SeqUtils import gc_fraction
 from matplotlib import pyplot as plt
 from collections import Counter
 
-SEQ_PATH = "./seq_files/"
-REPORT_PATH = "./reports/"
+SEQ_PATH = Path("seq_files")
+REPORT_PATH = Path("reports")
 
 # Load sequence files from the specified directory and categorize them by format
 def load_seq_files() -> list:
     fasta_files = []
     fastq_files = []
-    for filename in os.listdir(SEQ_PATH):
-        if filename.endswith(".fasta"):
+    if not SEQ_PATH.exists():
+        return [], []
+
+    for filename in SEQ_PATH.iterdir():
+        if filename.suffix == ".fasta":
             fasta_files.append(filename)
-        elif filename.endswith(".fastq") or filename.endswith(".fq"):
+        elif filename.suffix == ".fastq" or filename.suffix == ".fq":
             fastq_files.append(filename)
     return fasta_files, fastq_files
 
@@ -45,7 +48,8 @@ def generate_kmers(sequence: str, k: int):
 def process_sequence_files(file_list: list, format_type: str, stats: dict, kmer_stats: Counter, k: int) -> None:
     for filename in file_list:
         print(f"Processing {format_type.upper()} file: {filename}")
-        for record in SeqIO.parse(os.path.join(SEQ_PATH, filename), format_type):
+        filepath = SEQ_PATH / filename
+        for record in SeqIO.parse(filepath, format_type):
             seq_str = str(record.seq)
             seq_type = detect_sequence_type(seq_str)
             stats[seq_type]["lengths"].append(len(seq_str))
@@ -95,14 +99,14 @@ def plot_length_distribution(stats: dict):
 
     plt.tight_layout()
     output_filename = "sequence_analysis_report.png"
-    plt.savefig(os.path.join(REPORT_PATH, output_filename)) 
+    plt.savefig(REPORT_PATH / output_filename) 
     plt.close()
 
 # Save a summary of the analysis, including total sequences, N50 values, and top k-mers, to a text file.
 def save_summary(stats: dict, kmer_stats: Counter):
     all_lengths = stats["DNA"]["lengths"] + stats["RNA"]["lengths"] + stats["Protein"]["lengths"]
     
-    with open(os.path.join(REPORT_PATH, "summary.txt"), "w") as f:
+    with open(REPORT_PATH / "summary.txt", "w") as f:
         f.write("Sequence Type Summary:\n\n")
         f.write(f"Total Sequences Analyzed: {len(all_lengths)}\n")
         f.write(f"Unique K-mers found:      {len(kmer_stats)}\n")
@@ -130,13 +134,13 @@ def save_summary(stats: dict, kmer_stats: Counter):
             f.write("No k-mers generated.\n")
 
 def main():
-    os.makedirs(SEQ_PATH, exist_ok=True)
+    SEQ_PATH.mkdir(parents=True, exist_ok=True)
     fasta_files, fastq_files = load_seq_files()
     print("FASTA files found:", len(fasta_files))
     print("FASTQ files found:", len(fastq_files))
     if not fasta_files and not fastq_files:
         print(f"No FASTA or FASTQ files found in the directory. Please place your files in the {SEQ_PATH} folder and run again")
-    os.makedirs(REPORT_PATH, exist_ok=True)
+    REPORT_PATH.mkdir(parents=True, exist_ok=True)
 
     k = input("Enter the value of k for k-mer generation: ")
     try:
