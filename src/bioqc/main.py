@@ -48,8 +48,7 @@ def generate_kmers(sequence: str, k: int):
 def process_sequence_files(file_list: list, format_type: str, stats: dict, kmer_stats: Counter, k: int) -> None:
     for filename in file_list:
         print(f"Processing {format_type.upper()} file: {filename}")
-        filepath = SEQ_PATH / filename
-        for record in SeqIO.parse(filepath, format_type):
+        for record in SeqIO.parse(filename, format_type):
             seq_str = str(record.seq)
             seq_type = detect_sequence_type(seq_str)
             stats[seq_type]["lengths"].append(len(seq_str))
@@ -165,10 +164,10 @@ def main():
     print(f"Processed {len(fastq_files)} FASTQ files.")
 
     plot_length_distribution(stats)
-    print(f"Length distribution plot saved to {REPORT_PATH}sequence_analysis_report.png")
+    print(f"Length distribution plot saved to {REPORT_PATH}/sequence_analysis_report.png")
 
     save_summary(stats, kmer_stats)
-    print(f"Summary saved to {REPORT_PATH}summary.txt")
+    print(f"Summary saved to {REPORT_PATH}/summary.txt")
     
 if __name__ == "__main__":
     main()
